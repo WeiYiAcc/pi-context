@@ -30,17 +30,20 @@ const resolveTargetId = (sm: SessionManager, target: string): string => {
         const tree = sm.getTree();
         return tree.length > 0 ? tree[0].entry.id : target;
     }
+
+    // If it already looks like an ID, keep it.
     if (/^[0-9a-f]{8,}$/i.test(target)) return target;
-    const find = (nodes: SessionTreeNode[]): string | null => {
-        for (const n of nodes) {
-            if (sm.getLabel(n.entry.id) === target) return n.entry.id;
-            const r = find(n.children);
-            if (r) return r;
-        }
-        return null;
-    };
-    // sm.getTree() returns the SDK's SessionTreeNode[], which is structurally compatible
-    return find(sm.getTree()) || target;
+
+    // Iterative DFS to avoid call stack overflows on deep histories.
+    const stack: SessionTreeNode[] = [...(sm.getTree() as unknown as SessionTreeNode[])];
+    while (stack.length > 0) {
+        const n = stack.pop()!;
+        if (sm.getLabel(n.entry.id) === target) return n.entry.id;
+        if (n.children?.length) stack.push(...n.children);
+    }
+
+    // Fallback: let SessionManager deal with invalid targets downstream.
+    return target;
 };
 
 const ContextLogParams = Type.Object({
