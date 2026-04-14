@@ -62,6 +62,11 @@ export default function (pi: ExtensionAPI) {
       const totalActual = usage.tokens;
       const limit = usage.contextWindow;
 
+      if (totalActual == null || limit == null || usage.percent == null) {
+        ctx.ui.notify("Context usage info not available.", "warning");
+        return;
+      }
+
       const totalRaw = systemTokensRaw + toolDefTokensRaw + msgTokensRaw + toolUseTokensRaw + toolResultTokensRaw;
       const ratio = totalRaw > 0 ? (totalActual / totalRaw) : 1;
 
