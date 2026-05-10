@@ -83,12 +83,17 @@ export default function (pi: ExtensionAPI) {
 
     // Helper: Check if a tag name already exists in the tree
     // Iterative DFS to avoid call stack overflows on deep histories.
+    // Push children in reverse order to preserve left-to-right pre-order semantics.
     const findTagInTree = (sm: SessionManager, nodes: SessionTreeNode[], tagName: string): string | null => {
-        const stack: SessionTreeNode[] = [...nodes];
+        const stack: SessionTreeNode[] = [...nodes].reverse();
         while (stack.length > 0) {
             const n = stack.pop()!;
             if (sm.getLabel(n.entry.id) === tagName) return n.entry.id;
-            if (n.children?.length) stack.push(...n.children);
+            if (n.children?.length) {
+                for (let i = n.children.length - 1; i >= 0; i--) {
+                    stack.push(n.children[i]);
+                }
+            }
         }
         return null;
     };
