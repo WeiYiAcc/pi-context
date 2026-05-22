@@ -1,0 +1,68 @@
+# Repeated Items and Batch Work
+
+Use this reference when the work involves many similar items handled over many turns, such as:
+- repeated cases
+- repeated tickets
+- repeated reviews
+- repeated checks
+- repeated fix attempts on similar inputs
+
+Use this reference when the items are similar enough that the same method should be reused across them. If the subtasks are heterogeneous and anchored to a roadmap or todo baseline, use `planning-and-execution.md` instead.
+
+## Working pattern
+
+1. Create a checkpoint at the start of the overall repeated-item task.
+2. If item 1 teaches you a reusable approach, checkpoint again after that approach becomes clear.
+3. Work item by item.
+4. Rewind after each completed item or completed mini-phase when the raw path is no longer worth carrying forward.
+5. Use timeline occasionally to verify that the history still has a clean structure.
+
+For repeated-item work, the default completion move is not "keep carrying the last item's raw reasoning". Once an item is done and its takeaway is stable, rewind back to the repeated-work anchor.
+
+## Useful anchors
+
+Example checkpoint names:
+- `vendor-review-start`
+- `vendor-review-method-clear`
+- `ticket-triage-batch-start`
+- `ticket-triage-pattern-1-confirmed`
+
+## When to review timeline
+
+Run `context_timeline` when:
+- several items have already been processed
+- item-level work has created multiple branches or rewinds
+- you want to confirm that the overall pattern still looks clean
+- you are about to choose which anchor repeated work should keep returning to
+
+## When to rewind
+
+Rewind after:
+- a representative item produced a reusable method
+- a single item is complete and the raw path should be compacted
+- an item-specific dead end is understood and should not remain active in full
+
+## Example rhythm
+
+```javascript
+context_checkpoint({ name: "vendor-review-start" });
+
+// ... work through first representative item ...
+
+context_checkpoint({ name: "vendor-review-method-clear" });
+
+// ... process another item ...
+
+context_rewind({
+  target: "vendor-review-method-clear",
+  message: "One more vendor review completed. Reason: compacting finished item work and returning to the clean repeated-item anchor. Next step: process the next vendor using the same method.",
+  backupCheckpoint: "vendor-review-item-7-history"
+});
+```
+
+## Warning signs
+
+Use stronger checkpoint/timeline/rewind discipline when:
+- each item creates lots of local reasoning
+- you are starting to confuse one item's path with another's
+- the repeated work is stretching across many turns

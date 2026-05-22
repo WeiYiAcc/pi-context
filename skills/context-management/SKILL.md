@@ -1,258 +1,274 @@
 ---
 name: context-management
-description: Strategies for efficient context management using context_log, context_tag, and context_checkout. Learn when to tag, how to visualize the graph, and safe ways to squash history. Use for complex refactoring, debugging, and long conversations.
+description: Read this skill for work that is likely to stretch across many turns or get messy if handled in one uninterrupted thread. Especially use it when the request sounds like first go search or read a lot, first look through logs/files/pages/results and come back with the real conclusion, this will probably take several rounds, there may be several approaches to try, first make a plan or todo list and then work through it, there will be many similar cases to handle, the user may interrupt with side tasks, or the thread is already getting messy and should be cleaned up before continuing. It teaches a working mode built around frequent checkpoints, periodic timeline review, and targeted rewinds as the task evolves. Usually skip it for one-shot reads, bounded summaries, direct rewrites, or deterministic scripts.
 ---
 
 # Context Management
 
-**CRITICAL: THIS SKILL MANAGES YOUR MEMORY. WITHOUT IT, YOU WILL FORGET.**
+Use this skill to adopt an explicit conversation-management working mode.
 
-Your context window is limited. As conversations grow, "pollution" (noise, failed attempts) degrades your reasoning.
+This mode is for tasks where the work may still be valid, but the thread carrying it is likely to become long, noisy, multi-phase, or hard to keep clean. The goal is to keep the work navigable: checkpoint early, review timeline when needed, and compact completed noisy phases back to clean anchors.
 
-**YOU MUST PROACTIVELY MANAGE YOUR HISTORY.**
-Do not wait for the user to tell you.
+Use only the current tool names:
+- `context_checkpoint`
+- `context_timeline`
+- `context_rewind`
 
-## The Core Philosophy: Build, Perceive, Navigate
+## When to use this skill
 
-```
-Context Window = RAM (Expensive, volatile, limited)
-Context Graph  = Disk (Cheap, persistent, unlimited)
+Read this skill when the task is likely to outgrow one clean thread and would benefit from explicit history management.
 
-→ Move finished tasks from RAM to the Graph.
-```
+It should feel like a good fit when the user is effectively asking for one of these patterns:
 
-Manage your context window like a Git repository. You are the maintainer.
+### “First go look through a lot of stuff, then come back with the real conclusion.”
+Examples:
+- searching or researching first
+- web search or browser-driven information gathering
+- reading many files, logs, docs, webpages, or web results
+- review / comparison / audit-heavy reading across many sources
 
-1.  **BUILD the Skeleton (`context_tag`)**:
-    *   Raw conversation is a flat list. **Tags create structure.**
-    *   Without tags, `context_log` is just a list of IDs. With tags, it is a **Map**.
-2.  **PERCEIVE the State (`context_log`)**:
-    *   Check the HUD: Is "Segment Size" too big? You are drifting.
-    *   Check the Graph: Where are you? Are you in a deep branch?
-3.  **NAVIGATE & MERGE (`context_checkout`)**:
-    *   **Squash:** Convert a messy "feature branch" (thinking process) into a single "merge commit" (summary).
-    *   **Jump:** Move between tasks or retry paths without carrying baggage.
+### “This will probably take several rounds or several phases.”
+Examples:
+- investigate -> decide -> execute -> validate
+- plan -> implement -> verify
+- collect -> compare -> conclude
+- any task that will keep changing shape as it progresses
 
-## Quick Start: The Loop
+### “We may need to try more than one route.”
+Examples:
+- A / B / C approaches
+- dead ends and retries
+- compare and choose
+- pivoting after a failed direction
 
-Follow this cycle for every major task:
+### “Start from a plan or todo list, then work through it.”
+Examples:
+- a formal implementation or migration plan
+- a roadmap with milestones
+- a lightweight todo list or checklist
+- staged execution that will be revisited across many turns
 
-1.  **CHECK:** Verify state.
-    `context_log`
-2.  **START:** Tag the beginning with a semantic name.
-    `context_tag({ name: "<task-slug>-start" })`  // e.g., `auth-login-start`
-3.  **WORK:** Execute steps.
-4.  **MILESTONE:** Tag intermediate stable states.
-    `context_tag({ name: "<task-slug>-plan" })`  // e.g., `auth-login-plan`
-5.  **SQUASH (Autonomous):** If history becomes noisy or low-density, **Squash with Backup**.
-    *   *Action:* `context_checkout({ target: "<task-slug>-start", message: "...", backupTag: "<task-slug>-raw-history" })`
-    *   *Action (Optional):* `context_tag({ name: "<task-slug>-done" })`
-    *   *Safety:* If you need the details later, checkout the backup tag.
+### “There will be many similar cases, tickets, or items.”
+Examples:
+- repeated cases
+- repeated tickets
+- repeated checks
+- repeated reviews
+- repeated fix attempts on similar inputs
 
-## Tool Reference
+### “I may interrupt you, or this thread is already getting messy.”
+Examples:
+- the user may insert side tasks
+- you need to pause one line of work and resume it later
+- the thread is already long, stale, or cluttered
+- finished noisy phases should be cleaned up before continuing
 
-| Tool | Analog | Purpose | When to Use |
-| :--- | :--- | :--- | :--- |
-| `context_tag` | `git tag` | Bookmark a stable state. | Before risky changes. Before starting a new task. |
-| `context_log` | `git log` | See where you are. | When you feel lost. To find IDs for checkout. |
-| `context_checkout`| `git reset --soft` | **Time Travel / Squash.** | To undo mistakes. To compress history. |
+### “This is code-facing work and may turn noisy while I debug or implement it.”
+Examples:
+- implementation
+- debugging
+- troubleshooting
+- refactoring
+- migration
+- code-facing review or fix work
 
-## Critical Rules
+If one of these patterns clearly applies, take the first structural action now—usually a checkpoint—instead of only describing the intended workflow.
 
-### Tag Wisely (Build The Skeleton)
+If multiple approaches, failed branches, compare work, or pivots become central, also read `references/retry-branch-and-pivot.md` in addition to the main scenario reference.
 
-Tags are the "Table of Contents". Name them so you can understand the history at a glance.
+## When to skip it
 
-**Naming Formula:** `<task-slug>-<phase>`
+Usually skip this skill for:
+- one-shot reads
+- bounded summaries
+- direct rewrites with little exploration
+- simple fact lookup or concept explanation
+- deterministic scripts or fixed-rule automation
+- short tasks that can stay clean in one thread
 
-*   **task-slug**: Short, kebab-case identifier for the task (e.g., `auth-login`, `db-migration`)
-*   **phase**: The stage of work (`start`, `plan`, `impl`, `done`, `fail`, `backup`)
+## Operating rhythm
 
-| Bad (Generic) | Good (Semantic) | Why |
-| :--- | :--- | :--- |
-| `task-start` | `auth-oauth-start` | Describes WHAT task |
-| `pre-research` | `error-log-analysis-start` | Future-you knows the topic |
-| `phase-1-done` | `db-schema-plan-done` | Know which phase of which task |
-| `debug-retry` | `null-pointer-fix-retry` | What bug? |
+1. Before entering a noisy phase, create a checkpoint.
+2. If you feel disoriented or anchor choice is unclear, run `context_timeline`.
+3. Add more checkpoints at milestones, phase boundaries, risky branches, and interruptions.
+4. Do not rewind just because the skill triggered.
+5. Once a noisy phase is complete and summarizable, rewind to the best earlier clean anchor.
+6. Continue from the compacted state instead of dragging the full messy path forward.
 
-**Tag Categories:**
+The key habit is: **checkpoint is the default move; rewind is the selective cleanup move.** Checkpointing alone is not the end state. Checkpoints create anchors so that completed noisy phases can later be compacted cleanly.
 
-| Category | Pattern | Examples |
-| :--- | :--- | :--- |
-| **Start** | `<task>-start` | `auth-jwt-start`, `docker-setup-start` |
-| **Plan** | `<task>-plan` | `api-v2-plan`, `migration-plan` |
-| **Milestone** | `<task>-<milestone>` | `auth-jwt-impl-done`, `tests-passed` |
-| **Backup** | `<task>-raw-history` | `auth-jwt-raw-history` |
-| **Failure** | `<task>-fail-<reason>` | `auth-jwt-fail-timeout` |
+## Tool policy
 
-**How to generate:** Ask yourself "What is the task?" → Extract 1-3 keywords (e.g., "fix login timeout" → `login-timeout-fix-start`)
+### `context_checkpoint`
+This is the default tool in this mode.
 
-### Squash Noise, Keep Signal, Focus on Goal (Context Hygiene)
-Think of your conversation as a "Feature Branch" full of messy thoughts.
-**You must distinguish Signal from Noise.**
+Use it:
+- before noisy work
+- before a new phase
+- after a meaningful milestone
+- before a risky attempt
+- before switching to another subtask
 
-*   **Signal (High Value):** Design decisions, user constraints, final working code. -> **KEEP.**
-*   **Noise (Low Value):** Failed attempts, long tool outputs, "thinking" steps. -> **SQUASH.**
-*   **Focus on Goal:** Ask yourself: "Does this message help me achieve the current goal?" -> **KEEP.**
+Use semantic names so the timeline stays readable.
 
-**When to Squash:**
-1.  **Task Done:** Convert the messy process into one clean summary.
-2.  **Low Density:** You read 2000 lines but only found 1 error.
-
-**Safety:** Squashing is **LOSSLESS**.
-By using `backupTag`, you save the "Messy Branch" forever. You can always checkout the backup tag if the summary isn't enough.
-*   **Main Trunk:** Jump back to the summary.
-*   **Backup Tag:** Jump back to the raw details.
-
-### Fail Fast, Revert Faster
-If you fail 3 times:
-1.  **STOP.** Don't try a 4th time.
-2.  `context_checkout` back to the last safe tag.
-3.  Summarize the failure in the checkout message ("Tried X, failed because Y").
-4.  Try a new approach from the clean state.
-
-### After Checkout: Execute Next Step
-
-When `context_checkout` completes and injects a summary, you are in a **new context**.
-
-1. **READ** the injected summary carefully
-2. **EXECUTE** the `Next Step` from the summary - this is your new task.
-
-## Decision Matrix: When to Act
-
-| Situation | Action | Reason |
-| :--- | :--- | :--- |
-| **Starting Task** | `context_tag({ name: "<task-slug>-start" })` | Create a rollback point. |
-| **Research / Logs** | `context_checkout` (Squash) | **Process is Noise.** Read 2000 lines -> Keep result. |
-| **Messy Debugging** | **Squash w/ Backup** | **Cleanup.** The error logs are noise once fixed. |
-| **Task Done (Candidate)**| **Squash w/ Backup** | **Assume Success.** Summary is usually enough. Backup exists if not. |
-| **Goal Shift** | `context_checkout` (Squash) | Old context is irrelevant. |
-| **Drift (some steps w/o tag)** | **Tag (Milestone)** | Maintain the skeleton. Don't fly blind. |
-
-## The "Context Health" Check
-
-If you cannot answer these, run `context_log`:
-
-| Question | Answer Source |
-| :--- | :--- |
-| **Where is the skeleton?** | The sequence of `tag`s in the log. |
-| **Is this history useful?** | If "No" -> **SQUASH IT.** |
-| **Am I in a loop?** | Repeated entries in the graph. |
-
-## Good Checkout Messages
-
-The `message` is your lifeline to your past self.
-A good message preserves critical context that would otherwise be lost.
-
-Structure: `[Key Finding/Status] + [Reason] + [Important Changes] + [Next Step]`
-
-*   **Key Finding/Status**: What did you discover or complete? Include specific numbers, errors, or outcomes.
-*   **Reason**: Why are you branching/moving? (e.g., "Task complete", "Approach failed", "Need raw logs")
-*   **Important Changes**: What files or logic have been modified? (This checkout only resets *conversation history*, NOT disk files, so you must remember what changed.)
-*   **Next Step**: What should you do immediately after this squash? Be specific. (e.g., "Wait for user feedback", "Implement the recommended fix", "Revert file X and try approach Y")
+Recommended patterns:
+- `<task>-start`
+- `<task>-<phase>`
+- `<task>-<attempt>`
+- `<task>-<milestone>`
 
 Examples:
+- `auth-oauth-start`
+- `timeout-analysis-search`
+- `db-migration-plan`
+- `parser-fix-attempt-2`
+- `vendor-review-milestone-1`
 
-*   *Good (Resetting after failure)*: "Recursive parser hit stack overflow at depth 8000. Switching to iterative. **Reason**: Stack limit reached. **Important Changes**: Modified `utils/recursion.ts`. **Next Step**: Inform user of the failure and propose iterative approach."
-*   *Good (Cleaning up)*: "Auth module complete: JWT + OAuth2 + RBAC. 23 tests passing. **Reason**: Task done, cleaning context. **Important Changes**: Created `auth/`, modified `routes.ts` and `middleware.ts`. **Next Step**: Report completion to user, ask if they want to review or test."
-*   *Bad*: "Switching context." (Too vague - you will forget why)
-*   *Bad*: "Done." (What is done? What should you do next?)
+Avoid generic names like `start`, `checkpoint-1`, `phase-1`, or `retry`.
 
-## Anti-Patterns
+### `context_timeline`
+Use this tool to regain orientation.
 
-| Don't | Do Instead |
-| :--- | :--- |
-| **Blind Tagging** (Tagging without looking) | **Check** (`context_log`) to avoid duplicates or tagging noise. |
-| **Over-Tagging** (Tagging every step) | **Tag** only major phase changes (`start`, `milestone`). |
-| **Hoard** (Keep all history "just in case") | **Squash** low-density history (research, logs). |
-| **Panic** (Apologize repeatedly for errors) | **Revert** (`context_checkout`) to before the error. |
-| **Blind Checkout** (Guessing IDs) | **Look** (`context_log`) first to get valid IDs. |
-| **Vague Summaries** ("Done", "Fixed") | **Detailed Summaries** ("Found bug in line 40. Fixed with patch X.") |
-| **Generic Tag Names** (`task-start`, `phase-1`) | **Semantic Names** (`auth-jwt-start`, `db-schema-plan`) |
-| **Missing Next Step** in checkout message | **Always specify** what to do after squash (e.g., "Wait for user", "Implement fix X") |
+Use it:
+- when you feel lost or drifted
+- when several checkpoints or branches now exist
+- before choosing a rewind target
+- at major phase transitions if you need a quick map
+- when the thread feels cluttered and you want a structural view before acting
 
-## Recipes (Copy-Paste)
+When you inspect timeline, ask:
+- Where is the nearest clean anchor?
+- Has the current segment grown too long without a clean checkpoint?
+- Am I carrying a failed or stale branch forward?
+- Is there already a better checkpoint to rewind to?
 
-### 1. The "Miner" (Immediate Squash)
-**Goal:** Pure information gathering (Reading files, Searching web).
-**Why:** The *process* of searching is irrelevant. Only the *result* matters.
+### `context_rewind`
+Use this tool to compact a path that should no longer stay active in full.
 
-**Example Task:** Analyzing error logs to find root cause of timeout
+Use it:
+- after a noisy investigation has produced a stable finding
+- after a failed attempt has produced a clear lesson
+- after a completed phase where the next step is clear
+- after a representative item or branch has already taught you what you need
+- when the current path is dragging too much stale or low-value context forward
 
-```javascript
-// 1. Tag BEFORE starting the noisy work (use descriptive name)
-context_tag({ name: "timeout-analysis-start" });
+A successful use of this mode often ends with `context_rewind`, not just more checkpointing.
 
-// ... (Read 5 log files, search 3 docs, find DB connection pool exhaustion) ...
+## Rewind protocol
 
-// 2. Squash IMMEDIATELY. Do not wait for user.
-context_checkout({
-  target: "timeout-analysis-start",
-  message: "Found DB connection pool exhaustion as root cause (pool size: 10, peak load: 1000 req/s). Recommended fix: increase to 50. **Reason**: Context cleanup after research. **Important Changes**: None (read-only). **Next Step**: Report findings to user and await approval to implement fix.",
-  backupTag: "timeout-analysis-raw-history" // Safety backup
-});
-context_tag({ name: "timeout-analysis-done" });
-```
+### When to rewind
+Rewind when the current phase is ready to be compacted.
 
-### 2. The "Candidate" (Wait for Confirmation)
-**Goal:** You finished a complex task.
-**Why:** The history is noisy. The result is clean.
-**Safety:** We create a backup tag automatically.
+Good reasons to rewind:
+- a phase produced a stable finding or conclusion
+- a failed path produced a clear dead-end lesson
+- a milestone was reached and you want a cleaner continuation
+- a representative item or branch has already taught you the reusable lesson
+- the thread is carrying more stale intermediate process than active value
 
-**Example Task:** Implementing OAuth login flow
+A phase is usually rewind-ready when you now have one of these:
+- a root cause or research conclusion
+- a clear failure reason for abandoning a branch
+- a completed implementation or troubleshooting phase
+- a reusable method learned from a representative item
+- a finished repeated-item segment whose raw path no longer needs to stay live
 
-```javascript
-// Squash to Summary (Optimistic Cleanup)
-context_checkout({
-  target: "oauth-impl-start", // Squash range: Start -> Now
-  message: "OAuth2 flow implemented with PKCE, Google + GitHub providers. All 12 tests passing. **Reason**: Task complete, cleaning up. **Important Changes**: Created `auth/oauth.ts`, modified `routes.ts`, `config.ts`. **Next Step**: Report completion to user, summarize what was implemented.",
-  backupTag: "oauth-impl-raw-history"
-});
-context_tag({ name: "oauth-impl-candidate" });
-```
+Do **not** rewind yet when:
+- you are still in the middle of active exploration
+- the result is still unstable or incomplete
+- you only feel mild clutter and a checkpoint would be enough
+- you have not yet decided which earlier anchor you want to continue from
 
-### 3. The "Undo" (Revert Squash)
-**Goal:** User asks about a detail you squashed away.
-**Action:** Jump back to the backup tag.
+When in doubt: checkpoint first, review timeline if needed, and rewind later once the phase boundary is clearer.
 
-**Example Task:** Reviewing OAuth implementation details
+### Choose the target and backup
+Choose the **best earlier clean anchor**, not just any earlier checkpoint.
 
-```javascript
-// Jump back to the raw history
-context_checkout({
-  target: "oauth-impl-raw-history",
-  message: "Reviewing token refresh logic - user reports 401 after 15 min idle. Suspect refresh token not firing. **Reason**: Need raw logs to trace the bug. **Important Changes**: None. **Next Step**: Re-read token refresh implementation and identify the bug."
-});
-context_tag({ name: "oauth-review-start" });
-```
+Usually prefer:
+- the start of the noisy phase you are compacting
+- the nearest clean phase-start before the current failed or completed path
+- the repeated-work anchor for repeated-item workflows
+- the last stable pre-branch checkpoint when abandoning an approach
 
-### 4. Branching (Alternative Approach)
-**Scenario:** Method A failed (and was squashed). You want to try Method B from the clean state.
-**Action:** Checkout the start point.
+Avoid:
+- rewinding too far back when a nearer clean anchor exists
+- rewinding to a checkpoint that still includes the noise you want to leave behind
+- defaulting to `root` unless the whole active path should be reset
 
-**Example Task:** Fixing memory leak - trying different approaches
+If you are unsure which anchor is best, run `context_timeline` first.
 
-```javascript
-// Method A (weak references) failed, trying Method B (object pooling)
-context_checkout({
-  target: "memory-leak-fix-start", 
-  message: "WeakRef approach failed: objects GC'd within 30s (expected: 5min). Cache hit rate dropped from 95% to 12%. **Reason**: Switching to object pooling approach. **Important Changes**: `CacheManager.ts` modified (will revert). **Next Step**: Revert `CacheManager.ts` changes and implement object pooling strategy."
-});
-context_tag({ name: "memory-leak-pool-approach-start" });
-```
+Use `backupCheckpoint` when:
+- the raw path may still be useful later
+- you are compacting a long investigation
+- you are abandoning a branch but may need its details again
+- you want a safe recovery point before a major rewind
 
-### 5. The "Undo" (Failed Attempt)
-You tried to fix a bug but broke everything.
-**Goal:** Clean up a failed path.
+A backup checkpoint preserves the raw path you are compacting. If the summary later proves insufficient, return to that backup instead of redoing the whole investigation.
 
-**Example Task:** Fixing race condition in async handler
+If the raw path is low value and unlikely to matter again, a backup is optional.
 
-```javascript
-// Attempted mutex-based fix, but introduced deadlock
-context_checkout({
-  target: "race-condition-fix-start",
-  message: "Mutex caused deadlock: Thread A holds mutex, awaits callback; callback needs mutex held by B; B waits for A. Circular wait detected. **Reason**: Trying lock-free CAS approach next. **Important Changes**: `AsyncQueue.ts` lines 70-90 modified (backup saved). **Next Step**: Revert `AsyncQueue.ts` and implement lock-free compare-and-swap approach.",
-  backupTag: "race-condition-mutex-fail" // Save the failure for reference
-});
-context_tag({ name: "race-condition-lockfree-start" });
-```
+### Write the message
+A rewind message is the baton pass to future-you. It is not a throwaway comment.
+
+At minimum, include:
+- the main result, lesson, or failure summary
+- why you are rewinding now
+- important changes, especially changed files if disk state changed
+- the next step after the rewind
+
+Useful shapes:
+- `[result] + [reason for rewind] + [next step]`
+- `[result] + [reason for rewind] + [important decision or change] + [next step]`
+- `[result] + [reason for rewind] + [important changes / changed files] + [next step]`
+
+Good examples:
+- `Found DB connection pool exhaustion as the likely root cause. Reason: investigation phase is complete and ready to compact. Next step: report findings and propose mitigation.`
+- `Parser fix is implemented and the debugging phase is complete. Reason: compacting implementation history before focused validation. Important changes: modified src/parser.ts and test/parser.test.ts. Next step: run targeted validation and summarize remaining edge cases.`
+- `WeakRef approach failed because objects were collected too early and cache hit rate collapsed. Reason: abandoning this attempt and returning to a clean anchor. Next step: try object pooling instead.`
+
+Avoid vague messages like:
+- `Done`
+- `Switching context`
+- `Investigated`
+- `Going back`
+
+Before using `context_rewind`, quickly check:
+- Is there already a stable result, lesson, or failure summary?
+- Do I know why this is the right moment to rewind?
+- If disk state changed, did I record the important changes or changed files?
+- Is the next step explicit?
+- Would future-me understand what changed just from this message?
+
+If not, keep working a bit longer or checkpoint first.
+
+### After rewind
+When `context_rewind` succeeds:
+1. Read the injected summary carefully.
+2. Treat it as the new active state.
+3. Execute the next step from that summary.
+4. Do not keep reasoning from the full old path unless you intentionally return to a backup checkpoint.
+
+## Common mistakes
+
+Avoid:
+- checkpointing constantly without phase meaning
+- rewinding blindly without checking timeline when anchor choice is unclear
+- carrying completed noisy phases forward instead of compacting them
+- writing vague rewind messages that future-you cannot act on
+
+## Read the right reference
+
+Read **one primary reference** based on the task shape:
+- search / research / reading-heavy work, especially web search, browser operation, or low-density webpage reading -> `references/search-research-and-reading.md`
+- development / debugging / troubleshooting / refactoring / migration -> `references/development-and-troubleshooting.md`
+- planning / staged execution / todo-driven work -> `references/planning-and-execution.md`
+- repeated similar items / batch work -> `references/repeated-items-and-batch-work.md`
+- task switching / pause-resume / cleanup-and-continue work -> `references/task-switching-and-cleanup.md`
+
+Then read the cross-cutting retry reference when needed:
+- multiple approaches, failed branches, compare, retry, or pivot behavior -> `references/retry-branch-and-pivot.md`
+
+Keep the mode simple:
+- checkpoint before mess
+- review timeline when orientation matters
+- rewind when a phase is ready to be compacted
