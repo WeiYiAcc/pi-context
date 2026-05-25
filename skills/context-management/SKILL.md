@@ -7,7 +7,7 @@ description: Read this skill for work that is likely to stretch across many turn
 
 Use this skill to adopt an explicit conversation-management working mode.
 
-This mode is for tasks where the work may still be valid, but the thread carrying it is likely to become long, noisy, multi-phase, or hard to keep clean. The goal is to keep the work navigable: checkpoint early, review timeline when needed, and compact completed noisy phases back to clean anchors.
+This mode is for tasks where the work may still be valid, but the thread carrying it is likely to become long, noisy, multi-phase, or hard to keep clean. The goal is to keep the work navigable: checkpoint early, review timeline when needed, and compact completed noisy phases back to clean anchors at useful continuation boundaries.
 
 Use only the current tool names:
 - `context_checkpoint`
@@ -88,14 +88,24 @@ Usually skip this skill for:
 
 ## Operating rhythm
 
+### Start-of-turn check
+At the start of each new user message, quickly classify the relationship to the previous active segment:
+- **Same task / next phase**: continue; rewind first if the previous phase is complete and noisy enough to compact.
+- **Correction or follow-up on the just-finished answer**: usually do not rewind yet; answer using the recent context.
+- **New unrelated task**: if the previous task was noisy and complete, rewind to its clean anchor with a summary before starting the new task.
+
+This start-of-turn check is what prevents both failure modes: it avoids premature rewinds immediately after a final answer, and it also prevents endless checkpoint-only behavior across real task switches.
+
+### Main loop
 1. Before entering a noisy phase, create a checkpoint.
 2. If you feel disoriented or anchor choice is unclear, run `context_timeline`.
 3. Add more checkpoints at milestones, phase boundaries, risky branches, and interruptions.
-4. Do not rewind just because the skill triggered.
-5. Once a noisy phase is complete and summarizable, rewind to the best earlier clean anchor.
-6. Continue from the compacted state instead of dragging the full messy path forward.
+4. Do not rewind just because the skill triggered, and do not rewind only because a user-visible task has just ended.
+5. Rewind only when there is an immediate continuation that benefits from cleanup: the next phase of the same task, the next repeated item, the next branch, or a later user message that starts a different task.
+6. If the whole requested task is complete and your only remaining action is to answer the user, answer cleanly and wait. On the next user message, decide whether the previous noisy segment should be compacted before starting new work.
+7. Continue from the compacted state instead of dragging the full messy path forward.
 
-The key habit is: **checkpoint is the default move; rewind is the selective cleanup move.** Checkpointing alone is not the end state. Checkpoints create anchors so that completed noisy phases can later be compacted cleanly.
+The key habit is: **checkpoint is the default move; rewind is the selective cleanup move.** Checkpoints create anchors so that completed noisy phases can later be compacted cleanly. Checkpointing alone is not the end state across long or multi-task conversations, but a final response after a completed task is not itself a reason to rewind.
 
 ## Tool policy
 
@@ -146,24 +156,34 @@ When you inspect timeline, ask:
 Use this tool to compact a path that should no longer stay active in full.
 
 Use it:
-- after a noisy investigation has produced a stable finding
-- after a failed attempt has produced a clear lesson
+- after a noisy investigation has produced a stable finding and there is more work to do from that finding
+- after a failed attempt has produced a clear lesson and the next attempt should start cleanly
 - after a completed phase where the next step is clear
 - after a representative item or branch has already taught you what you need
+- before starting a new, different user task when the previous completed task left noisy but summarizable history
 - when the current path is dragging too much stale or low-value context forward
 
-A successful use of this mode often ends with `context_rewind`, not just more checkpointing.
+Do not use it as an automatic epilogue after finishing a user request. A successful use of this mode often includes `context_rewind` at continuation boundaries, not just more checkpointing, but the right boundary may be the next user message rather than the current turn.
 
 ## Rewind protocol
 
+### Rewind gate
+Before using `context_rewind`, require all three conditions:
+1. The segment being left behind is noisy, stale, failed, or low-value in raw form.
+2. You can summarize the useful result, lesson, or state clearly enough for future-you.
+3. There is an immediate continuation that benefits from a cleaner context.
+
+If conditions 1 and 2 are true but condition 3 is not—because the entire requested task is done and you are about to give the final answer—wait. Let the next user message reveal whether this is a continuation, a correction, or a new task. If it is a new task, rewind before starting that new task.
+
 ### When to rewind
-Rewind when the current phase is ready to be compacted.
+Rewind when the current phase is ready to be compacted and a clean continuation is useful now.
 
 Good reasons to rewind:
-- a phase produced a stable finding or conclusion
-- a failed path produced a clear dead-end lesson
+- a phase produced a stable finding or conclusion and the same task has another phase to run
+- a failed path produced a clear dead-end lesson and you are about to try another path
 - a milestone was reached and you want a cleaner continuation
 - a representative item or branch has already taught you the reusable lesson
+- a new user message starts a different task, while the previous completed task left noisy but summarizable history
 - the thread is carrying more stale intermediate process than active value
 
 A phase is usually rewind-ready when you now have one of these:
@@ -177,9 +197,10 @@ Do **not** rewind yet when:
 - you are still in the middle of active exploration
 - the result is still unstable or incomplete
 - you only feel mild clutter and a checkpoint would be enough
+- the current user request is complete and there is no new task or next phase yet
 - you have not yet decided which earlier anchor you want to continue from
 
-When in doubt: checkpoint first, review timeline if needed, and rewind later once the phase boundary is clearer.
+When in doubt: checkpoint first, review timeline if needed, and rewind later once the phase boundary or task switch is clearer.
 
 ### Choose the target and backup
 Choose the **best earlier clean anchor**, not just any earlier checkpoint.
@@ -234,6 +255,7 @@ Avoid vague messages like:
 
 Before using `context_rewind`, quickly check:
 - Is there already a stable result, lesson, or failure summary?
+- Is there a real continuation now, rather than just cleanup after a final answer?
 - Do I know why this is the right moment to rewind?
 - If disk state changed, did I record the important changes or changed files?
 - Is the next step explicit?
@@ -253,7 +275,8 @@ When `context_rewind` succeeds:
 Avoid:
 - checkpointing constantly without phase meaning
 - rewinding blindly without checking timeline when anchor choice is unclear
-- carrying completed noisy phases forward instead of compacting them
+- rewinding immediately after a final deliverable when no next user intent is known
+- carrying completed noisy phases across a task switch instead of compacting them before the new task
 - writing vague rewind messages that future-you cannot act on
 
 ## Read the right reference

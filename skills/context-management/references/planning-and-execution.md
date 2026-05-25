@@ -30,9 +30,10 @@ Both variants use the same context-management rhythm.
 2. Create a checkpoint for the clean plan-ready state.
 3. Execute one subtask or phase.
 4. If that subtask becomes noisy, let it get noisy locally.
-5. Once the subtask produces a stable takeaway, rewind back to the plan-ready or phase-start anchor.
+5. Once the subtask produces a stable takeaway and another subtask or phase remains, rewind back to the plan-ready or phase-start anchor.
 6. Continue with the next subtask from the clean anchor.
 7. If the plan changes materially, checkpoint the updated plan state again.
+8. If the last subtask completes the user's whole request, give the final answer without an automatic rewind; decide on cleanup at the next user message if the conversation continues.
 
 ## Useful anchors
 
@@ -54,11 +55,12 @@ Run `context_timeline` when:
 ## When to rewind
 
 Rewind when:
-- a subtask is complete and its raw execution path is no longer worth keeping active
+- a subtask is complete, another subtask remains, and its raw execution path is no longer worth keeping active
 - a phase finished and the next phase should start from a cleaner state
 - the plan remains valid but the current execution segment has become noisy
+- a later user message starts a new task after the plan-driven task completed noisily
 
-Do not rewind just because a todo list exists. Rewind when a specific execution segment has already served its purpose and can be compacted.
+Do not rewind just because a todo list exists. Rewind when a specific execution segment has already served its purpose and can be compacted for an actual continuation.
 
 ## Replan
 

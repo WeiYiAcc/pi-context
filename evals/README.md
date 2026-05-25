@@ -67,6 +67,18 @@ Purpose:
 - evaluate these prompts by mode-signal evidence instead of requiring immediate tool invocation
 - positive cases pass when the agent either uses context-management operationally with the expected scenario signal, reads the expected reference, or states a clear matching working mode
 
+### 7. Multi-turn boundary set
+Files:
+- `context-management-multi-turn-evals.json`
+- `context-management-multi-turn-notes.md`
+- `run_context_multi_turn_eval.py`
+
+Purpose:
+- test behaviors that only appear across turns
+- verify that the agent does **not** rewind immediately after finishing a noisy task when the next user message is only a follow-up or correction
+- verify that the agent **does** rewind before starting a clearly different new task after a completed noisy task
+- verify that same-task next-phase transitions can still rewind when cleanup is actually useful
+
 ## Current skill hypothesis
 
 The skill is designed to teach this working rhythm:
@@ -122,11 +134,19 @@ python evals/run_context_eval.py borderline
 python evals/run_context_eval.py all
 ```
 
-Notes:
-- the runner temporarily removes installed `pi-context` from `~/.pi/agent/settings.json` while the run is active, so `with_skill` uses the local repo skill/extension and `no_skill` avoids the installed package leaking in
-- outputs are written to `evals/run-<timestamp>-<set>/`
-- long runs may exceed shell time limits; if that happens, partial per-case outputs under the run directory are still useful
+For cross-turn behavior, use:
 
+```bash
+python evals/run_context_multi_turn_eval.py with-skill
+# or
+python evals/run_context_multi_turn_eval.py both
+```
+
+Notes:
+- the runners temporarily remove installed `pi-context` from `~/.pi/agent/settings.json` while the run is active, so `with_skill` uses the local repo skill/extension and `no_skill` avoids the installed package leaking in
+- single-turn outputs are written to `evals/run-<timestamp>-<set>/`
+- multi-turn outputs are written to `evals/run-<timestamp>-multi-turn/`
+- long runs may exceed shell time limits; if that happens, partial per-case outputs under the run directory are still useful
 ## Current known limitation
 
 The default environment may still route some `no_skill` runs through other installed packages or provider behavior that knows about context tools indirectly. So the most trustworthy signal right now is:

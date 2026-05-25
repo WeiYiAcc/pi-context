@@ -15,7 +15,7 @@ These tasks often stay cleaner when treated as stages with anchors, instead of o
 1. Create a checkpoint before starting serious work.
 2. Add checkpoints before risky edits, new approaches, or major phase changes.
 3. Review the timeline when you need to understand the current shape of the work.
-4. Rewind after a stable implementation milestone, a failed approach, or a completed troubleshooting phase.
+4. Rewind after a stable implementation milestone, a failed approach, or a completed troubleshooting phase when there is another phase, attempt, validation step, or task switch that benefits from cleanup. If the completed phase is also the final user-visible deliverable, answer first and wait.
 
 ## Typical checkpoint moments
 
@@ -56,7 +56,7 @@ context_rewind({
 
 ### After a completed phase
 
-Use rewind when a phase is done and you want to continue from a cleaner thread.
+Use rewind when a phase is done and you want to continue from a cleaner thread. Do not use this as a reflexive final step after delivering the finished work; use it before validation, the next phase, the next attempt, or the next user task.
 
 ```javascript
 context_rewind({

@@ -14,10 +14,10 @@ Use this reference when the items are similar enough that the same method should
 1. Create a checkpoint at the start of the overall repeated-item task.
 2. If item 1 teaches you a reusable approach, checkpoint again after that approach becomes clear.
 3. Work item by item.
-4. Rewind after each completed item or completed mini-phase when the raw path is no longer worth carrying forward.
+4. Rewind after each completed item or completed mini-phase when another item remains and the raw path is no longer worth carrying forward.
 5. Use timeline occasionally to verify that the history still has a clean structure.
 
-For repeated-item work, the default completion move is not "keep carrying the last item's raw reasoning". Once an item is done and its takeaway is stable, rewind back to the repeated-work anchor.
+For repeated-item work, the default between-item move is not "keep carrying the last item's raw reasoning". Once an item is done, its takeaway is stable, and another item remains, rewind back to the repeated-work anchor. If the last item completes the whole user request, deliver the final answer and wait for the next user message before deciding whether to compact.
 
 ## Useful anchors
 
@@ -38,9 +38,10 @@ Run `context_timeline` when:
 ## When to rewind
 
 Rewind after:
-- a representative item produced a reusable method
-- a single item is complete and the raw path should be compacted
+- a representative item produced a reusable method and the batch will continue
+- a single item is complete, another item remains, and the raw path should be compacted
 - an item-specific dead end is understood and should not remain active in full
+- a new user message arrives after the batch completed, and the batch's raw path is stale baggage for the new task
 
 ## Example rhythm
 

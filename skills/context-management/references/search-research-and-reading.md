@@ -17,10 +17,10 @@ This reference is for **input-heavy work where the process is much larger than t
 1. Create a checkpoint before a large search or reading loop.
 2. Search, browse, read, inspect, and follow leads normally.
 3. If you lose orientation, review the timeline.
-4. Once the investigation yields a stable finding, rewind to a cleaner anchor.
-5. Continue with the conclusion, recommendation, or next action instead of carrying the entire raw exploration forward.
+4. Once the investigation yields a stable finding and there is another step to take, rewind to a cleaner anchor.
+5. Continue with the conclusion, recommendation, or next action instead of carrying the entire raw exploration forward. If the finding is the final answer to the user's current request, answer first and wait; compact on the next user message if it starts new work.
 
-Do not stop at "I already made a checkpoint" if the investigation phase is actually complete. The cleanup move for completed research is usually a rewind back to the best earlier anchor.
+Do not stop at "I already made a checkpoint" if the investigation phase is complete and the conversation is continuing. The cleanup move for completed research is usually a rewind back to the best earlier anchor at the next useful continuation boundary.
 
 ## When to checkpoint
 
@@ -46,13 +46,13 @@ Run `context_timeline` when:
 
 ## When to rewind
 
-Rewind after the investigation produces one of these:
+Rewind after the investigation produces one of these and there is a continuation that benefits from cleanup:
 - a stable root cause
 - a stable comparison result
 - a dead-end conclusion
 - a shortlist of viable next actions
 
-If you already have one of these, the investigation phase is usually complete enough to compact.
+If you already have one of these, the investigation phase is usually complete enough to compact. If there is no continuation yet because you are about to give the final answer, wait until the next user message before deciding.
 
 Do not rewind in the middle of a still-open search loop just because the thread feels busy.
 
