@@ -1,6 +1,6 @@
 # Pi Context: Agentic Context Management for Pi
 
-An Agentic Context Management tool that helps AI agents proactively manage checkpoints, timeline inspection, and rewind-based context cleanup.
+An Agentic Context Management tool that helps AI agents proactively structure, inspect, and clean up conversation history using checkpoints, timeline inspection, and checkpoint-based compaction.
 
 Inspired by kimi-cli d-mail, it brings lossless time travel to Pi's session tree.
 
@@ -13,7 +13,7 @@ Earlier versions used more Git-like names such as `context_tag`, `context_log`, 
 Current versions intentionally use conversation-native names instead:
 - `context_checkpoint`
 - `context_timeline`
-- `context_rewind`
+- `context_compact`
 
 These tools manage **conversation history**, not repository state. They should not be treated as Git commands or as replacements for real `git tag`, `git log`, or `git checkout`.
 
@@ -51,5 +51,5 @@ This extension adds the `context-management` skill, which includes three core to
 2. **📊 Monitor (`context_timeline`)**
    Visualize conversation history, inspect token usage, and see where you are in the task tree.
 
-3. **⏪ Compress (`context_rewind`)**
-   Return to an earlier checkpoint or anchor with a carryover summary so completed noisy work can be compacted into a cleaner continuation.
+3. **⏪ Compact (`context_compact`)**
+   Compact a completed noisy path into a handoff summary and continue from an earlier checkpoint or anchor.

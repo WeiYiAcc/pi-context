@@ -4,7 +4,7 @@
     "category": "bounded-multifile-read",
     "query": "帮我快速过一遍 src/ 和 skills/ 目录，告诉我这个项目的 3 个核心模块分别负责什么。先别进入长期工作流，只要一份简洁概览。",
     "should_trigger": false,
-    "expected_behavior": "Read and summarize directly; should not proactively enter checkpoint/rewind workflow."
+    "expected_behavior": "Read and summarize directly; should not proactively enter checkpoint/compact workflow."
   },
   {
     "id": 2,
@@ -60,9 +60,9 @@
     "category": "tool-intensity",
     "query": "接下来我要开始一个大改动，但现在还没动手。你先帮我建立一个稳定起点，后面再看需不需要更重的上下文操作。",
     "should_trigger": true,
-    "expected_behavior": "Should likely use only a lightweight checkpoint, not an immediate rewind or heavy compaction.",
+    "expected_behavior": "Should likely use only a lightweight checkpoint, not an immediate compact or heavy compaction.",
     "must_include_tools": ["context_checkpoint"],
-    "must_not_include_tools": ["context_rewind"],
+    "must_not_include_tools": ["context_compact"],
     "allowed_first_tools": ["context_checkpoint"]
   },
   {
@@ -79,46 +79,46 @@
     "category": "tool-intensity",
     "query": "刚才那一轮研究已经把对话弄得很乱了。把真正有用的发现带回来，然后回到开始研究前的干净状态继续。",
     "should_trigger": true,
-    "expected_behavior": "Strong rewind case and should use context_rewind or equivalent compaction behavior.",
-    "must_include_tools": ["context_rewind"],
-    "allowed_first_tools": ["context_timeline", "context_rewind"]
+    "expected_behavior": "Strong compact case and should use context_compact or equivalent compaction behavior.",
+    "must_include_tools": ["context_compact"],
+    "allowed_first_tools": ["context_timeline", "context_compact"]
   },
   {
     "id": 12,
     "category": "subtask-switching",
     "query": "当前主任务还没做完，但我接下来可能随时插入几个临时子任务。先为主线建立好暂停点，这样我回来时能快速续上。",
     "should_trigger": true,
-    "expected_behavior": "Should favor checkpoint-first behavior for interruption readiness, rather than premature rewind.",
+    "expected_behavior": "Should favor checkpoint-first behavior for interruption readiness, rather than premature compact.",
     "must_include_tools": ["context_checkpoint"],
-    "must_not_include_tools": ["context_rewind"],
+    "must_not_include_tools": ["context_compact"],
     "allowed_first_tools": ["context_checkpoint"]
   },
   {
     "id": 13,
-    "category": "rewind-focus",
+    "category": "compact-focus",
     "query": "刚才排查时已经试过两条路，现在确认它们都是死路。把失败原因压成一小段结论，回到开始排查前的稳定点，然后从干净状态继续第三条路线。",
     "should_trigger": true,
-    "expected_behavior": "Clear rewind case after failed branches.",
-    "must_include_tools": ["context_rewind"],
-    "allowed_first_tools": ["context_timeline", "context_rewind"]
+    "expected_behavior": "Clear compact case after failed branches.",
+    "must_include_tools": ["context_compact"],
+    "allowed_first_tools": ["context_timeline", "context_compact"]
   },
   {
     "id": 14,
-    "category": "rewind-focus",
+    "category": "compact-focus",
     "query": "这轮日志研究已经结束了。只保留根因和下一步，然后回到研究开始前的干净状态继续。",
     "should_trigger": true,
-    "expected_behavior": "Clear rewind case after a noisy research phase is complete.",
-    "must_include_tools": ["context_rewind"],
-    "allowed_first_tools": ["context_timeline", "context_rewind"]
+    "expected_behavior": "Clear compact case after a noisy research phase is complete.",
+    "must_include_tools": ["context_compact"],
+    "allowed_first_tools": ["context_timeline", "context_compact"]
   },
   {
     "id": 15,
-    "category": "checkpoint-vs-rewind",
+    "category": "checkpoint-vs-compact",
     "query": "现在只是稍微有点乱，还没到要压缩历史的程度。先帮我打一个点，继续做，不要现在就回到旧锚点。",
     "should_trigger": true,
-    "expected_behavior": "Checkpoint yes, rewind no.",
+    "expected_behavior": "Checkpoint yes, compact no.",
     "must_include_tools": ["context_checkpoint"],
-    "must_not_include_tools": ["context_rewind"],
+    "must_not_include_tools": ["context_compact"],
     "allowed_first_tools": ["context_checkpoint"]
   }
 ]

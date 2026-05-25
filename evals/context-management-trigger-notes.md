@@ -5,7 +5,7 @@ This file explains why each query in `evals/context-management-trigger-evals.jso
 The current skill is optimized around a working rhythm of:
 - frequent checkpoints
 - periodic timeline review
-- targeted rewinds once a phase is ready to compact
+- targeted compactions once a phase is ready to compact
 
 It is **not** primarily about file-backed task state.
 
@@ -18,7 +18,7 @@ It is **not** primarily about file-backed task state.
 - repeated-item work across many turns
 - representative-case learning followed by repeated execution
 - high chance of thread growth and per-item noise
-- checkpoint/rewind discipline is central to staying clean
+- checkpoint/compact discipline is central to staying clean
 
 ### 2. Bug investigation with lots of code and logs
 **Query:** Read lots of code and logs; decide when to checkpoint and revisit timeline.
@@ -33,7 +33,7 @@ It is **not** primarily about file-backed task state.
 
 **Why it should trigger:**
 - noisy research process with compact desired output
-- strong fit for checkpoint + rewind after a stable finding
+- strong fit for checkpoint + compact after a stable finding
 
 ### 4. Multi-phase migration across 12 services
 **Query:** Inventory, migration plan, phased updates, regression validation; proactively do checkpoints and timeline review.
@@ -77,7 +77,7 @@ It is **not** primarily about file-backed task state.
 
 **Why it should trigger:**
 - cross-cutting investigation across many files
-- explicit request for autonomous checkpoint and rewind decisions
+- explicit request for autonomous checkpoint and compact decisions
 
 ### 10. Iterate while studying and trialing paths; compress failed routes
 **Query:** Not a one-shot implementation; when a route fails, compress failure and return to stable point.
@@ -124,7 +124,7 @@ It is **not** primarily about file-backed task state.
 - not inherently about context management unless it expands later
 
 ### 16. Explain the tool conceptually
-**Query:** Explain what `context_rewind` means with a simple example.
+**Query:** Explain what `context_compact` means with a simple example.
 
 **Why it should not trigger:**
 - pure concept explanation
@@ -194,9 +194,9 @@ These are the main places where tuning matters now:
    - Skip when the task is already a fixed-rule scripting problem.
 
 4. **Concept discussion vs operational execution**
-   - Talking about checkpoint/timeline/rewind should not automatically invoke them.
+   - Talking about checkpoint/timeline/compact should not automatically invoke them.
 
 5. **Tool-intensity proportionality**
    - Some positives should imply checkpoint-only.
    - Some should imply timeline-first.
-   - Some should imply rewind.
+   - Some should imply compact.

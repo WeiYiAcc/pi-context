@@ -27,9 +27,9 @@ EXT_FILES = [str(ROOT / "src" / "index.ts"), str(ROOT / "src" / "context.ts")]
 SKILL_FILE_PATH = str(ROOT / "skills" / "context-management" / "SKILL.md")
 REFERENCE_DIR = ROOT / "skills" / "context-management" / "references"
 REFERENCE_PATHS = sorted(str(p) for p in REFERENCE_DIR.glob("*.md"))
-CONTEXT_TOOLS = {"context_checkpoint", "context_timeline", "context_rewind"}
+CONTEXT_TOOLS = {"context_checkpoint", "context_timeline", "context_compact"}
 CONTEXT_MODE_MARKERS = [
-    "context", "checkpoint", "timeline", "rewind",
+    "context", "checkpoint", "timeline", "compact",
     "上下文", "会话", "检查点", "锚点", "时间线", "压缩", "回到干净", "续上",
 ]
 MODE_SIGNAL_REFS = {
@@ -214,12 +214,12 @@ def detect_context_tools(events: list[dict[str, Any]]) -> tuple[list[str], str |
 
 def intensity_expectation(case: dict[str, Any]) -> str | None:
     expected = (case.get("expected_behavior") or "").lower()
-    if "checkpoint" in expected and "timeline" not in expected and "rewind" not in expected:
+    if "checkpoint" in expected and "timeline" not in expected and "compact" not in expected:
         return "context_checkpoint"
     if "timeline first" in expected or "prefer context_timeline" in expected:
         return "context_timeline"
-    if "strong rewind" in expected or "context_rewind" in expected:
-        return "context_rewind"
+    if "strong compact" in expected or "context_compact" in expected:
+        return "context_compact"
     return None
 
 
@@ -412,11 +412,11 @@ def write_markdown(results: list[RunResult], summary: dict[str, Any], out_root: 
     for eval_set, configs in summary.items():
         lines.append(f"### {eval_set}")
         lines.append("")
-        lines.append("| config | cases | trigger pass | trigger pass rate | checkpoint used | timeline used | rewind used | ref pass rate | intensity pass rate | required-tool pass rate | allowed-first-tool pass rate | mode-signal pass rate |")
+        lines.append("| config | cases | trigger pass | trigger pass rate | checkpoint used | timeline used | compact used | ref pass rate | intensity pass rate | required-tool pass rate | allowed-first-tool pass rate | mode-signal pass rate |")
         lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
         for config, data in configs.items():
             lines.append(
-                f"| {config} | {data['cases']} | {data['trigger_pass']} | {data['trigger_pass_rate']:.2%} | {data['tool_usage']['context_checkpoint']} | {data['tool_usage']['context_timeline']} | {data['tool_usage']['context_rewind']} | {data.get('ref_pass_rate', 0):.2%} | {data.get('intensity_pass_rate', 0):.2%} | {data.get('required_tool_pass_rate', 0):.2%} | {data.get('allowed_first_tool_pass_rate', 0):.2%} | {data.get('mode_signal_pass_rate', 0):.2%} |"
+                f"| {config} | {data['cases']} | {data['trigger_pass']} | {data['trigger_pass_rate']:.2%} | {data['tool_usage']['context_checkpoint']} | {data['tool_usage']['context_timeline']} | {data['tool_usage']['context_compact']} | {data.get('ref_pass_rate', 0):.2%} | {data.get('intensity_pass_rate', 0):.2%} | {data.get('required_tool_pass_rate', 0):.2%} | {data.get('allowed_first_tool_pass_rate', 0):.2%} | {data.get('mode_signal_pass_rate', 0):.2%} |"
             )
         lines.append("")
 

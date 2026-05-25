@@ -5,7 +5,7 @@ This eval set is designed to reveal whether the current skill teaches the intend
 The target rhythm is:
 - checkpoint early and often
 - review timeline when orientation matters
-- rewind only when a phase is ready to compact
+- compact only when a phase is ready to compact
 
 ## What this set is trying to test
 
@@ -48,7 +48,7 @@ Prompts 9-11 are all positive, but should not all look the same.
 Desired gradient:
 - Prompt 9: checkpoint only
 - Prompt 10: timeline first, then decide
-- Prompt 11: must eventually rewind
+- Prompt 11: must eventually compact
 
 Goal:
 - test whether the agent chooses the right level of intervention, not just whether it uses any context tool
@@ -58,17 +58,17 @@ Prompt 12 checks whether the agent recognizes subtask switching as a checkpoint-
 
 Goal:
 - verify that interruption-prone work triggers the mode
-- confirm the likely move is checkpoint-first, not premature rewind
+- confirm the likely move is checkpoint-first, not premature compact
 
-### 7. Rewind is the core behavior to verify
+### 7. Compact is the core behavior to verify
 Prompts 11, 13, and 14 are the most important cases in this set.
 
 Goal:
 - verify that the agent does not stop at checkpointing forever
-- verify that when a noisy phase is actually complete, it performs a rewind back to a cleaner anchor
-- allow `context_timeline` before `context_rewind` if the agent wants to confirm the correct anchor first
+- verify that when a noisy phase is actually complete, it performs a compact back to a cleaner anchor
+- allow `context_timeline` before `context_compact` if the agent wants to confirm the correct anchor first
 
-### 8. Mild clutter should not cause premature rewind
+### 8. Mild clutter should not cause premature compact
 Prompt 15 is the brake pedal.
 
 Goal:
@@ -84,7 +84,7 @@ When you run this set, score each response on at least these dimensions:
 
 2. **Action proportionality**
    - Did it pick the right level of intervention?
-   - Example: using `context_rewind` too early should count against it.
+   - Example: using `context_compact` too early should count against it.
 
 3. **Workflow selection quality**
    - Especially for prompts 5-6, did it correctly decide between direct automation and representative-case exploration?
@@ -110,7 +110,7 @@ Also compare:
 - whether the agent escalated too early
 - whether it checkpointed proactively before mess
 - whether it used `context_timeline` for orientation at the right time
-- whether it used `context_rewind` only when justified
+- whether it used `context_compact` only when justified
 
 ## Expected likely outcomes
 

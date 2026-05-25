@@ -60,7 +60,7 @@
     "should_trigger": false
   },
   {
-    "query": "解释一下 context_rewind 这个工具是什么意思，最好举个简单例子。",
+    "query": "解释一下 context_compact 这个工具是什么意思，最好举个简单例子。",
     "should_trigger": false
   },
   {

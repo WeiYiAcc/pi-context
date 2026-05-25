@@ -14,7 +14,7 @@ This is a **cross-cutting pattern reference**. Read it alongside a primary refer
 1. Checkpoint before opening a risky branch or alternative path.
 2. Explore or implement that branch.
 3. If anchor choice becomes unclear, inspect timeline.
-4. Once the branch produces a stable lesson, decision, or dead-end, rewind back to the best clean pre-branch anchor.
+4. Once the branch produces a stable lesson, decision, or dead-end, compact back to the best clean pre-branch anchor.
 5. Continue with the next branch or the chosen direction from that clean state.
 
 ## When to review timeline
@@ -25,9 +25,9 @@ Run `context_timeline` when:
 - you need to choose the cleanest pre-branch anchor
 - the next direction is clear but the old branch still clutters active context
 
-## When to rewind
+## When to compact
 
-Rewind when:
+Compact when:
 - a branch clearly failed
 - a comparison is complete and one option won
 - the direction changed enough that the old path is now baggage
@@ -44,7 +44,7 @@ Examples:
 
 In these cases:
 - summarize what still matters
-- rewind back to the best clean anchor before the stale branch
+- compact back to the best clean anchor before the stale branch
 - continue under the new direction
 
 ## Example rhythm
@@ -54,9 +54,9 @@ context_checkpoint({ name: "oauth-fix-start" });
 
 // ... try cookie-based approach ...
 
-context_rewind({
+context_compact({
   target: "oauth-fix-start",
-  message: "Cookie-based approach is not viable because the callback flow loses session continuity. Reason: retrying from a clean anchor after a failed branch. Important decision: switch to signed state tokens. Next step: implement the signed-state approach.",
+  summary: "Cookie-based approach is not viable because the callback flow loses session continuity. Reason: retrying from a clean anchor after a failed branch. Important decision: switch to signed state tokens. Next step: implement the signed-state approach.",
   backupCheckpoint: "oauth-cookie-approach-history"
 });
 context_checkpoint({ name: "oauth-signed-state-start" });
@@ -67,5 +67,5 @@ context_checkpoint({ name: "oauth-signed-state-start" });
 Avoid:
 - opening alternative branches without a clean checkpoint first
 - dragging failed branches forward after their lesson is already clear
-- rewinding to a point that still includes the branch you meant to abandon
+- compacting to a point that still includes the branch you meant to abandon
 - treating every branch as equally worth preserving

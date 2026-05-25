@@ -15,7 +15,7 @@ These tasks often stay cleaner when treated as stages with anchors, instead of o
 1. Create a checkpoint before starting serious work.
 2. Add checkpoints before risky edits, new approaches, or major phase changes.
 3. Review the timeline when you need to understand the current shape of the work.
-4. Rewind after a stable implementation milestone, a failed approach, or a completed troubleshooting phase when there is another phase, attempt, validation step, or task switch that benefits from cleanup. If the completed phase is also the final user-visible deliverable, answer first and wait.
+4. Compact after a stable implementation milestone, a failed approach, or a completed troubleshooting phase when there is another phase, attempt, validation step, or task switch that benefits from cleanup. If the completed phase is also the final user-visible deliverable, answer first and wait.
 
 ## Typical checkpoint moments
 
@@ -40,28 +40,28 @@ Run `context_timeline` when:
 - you are about to abandon one approach and restart from another anchor
 - you are unsure which checkpoint best represents the clean continuation point
 
-## Rewind patterns
+## Compact patterns
 
 ### After a failed attempt
 
-Use rewind when an attempt clearly failed and you have a crisp summary of why.
+Use compact when an attempt clearly failed and you have a crisp summary of why.
 
 ```javascript
-context_rewind({
+context_compact({
   target: "memory-leak-fix-start",
-  message: "WeakRef approach failed because objects were collected too early and cache hit rate collapsed. Reason: abandoning this attempt and returning to a clean anchor. Next step: try object pooling instead.",
+  summary: "WeakRef approach failed because objects were collected too early and cache hit rate collapsed. Reason: abandoning this attempt and returning to a clean anchor. Next step: try object pooling instead.",
   backupCheckpoint: "memory-leak-weakref-raw-history"
 });
 ```
 
 ### After a completed phase
 
-Use rewind when a phase is done and you want to continue from a cleaner thread. Do not use this as a reflexive final step after delivering the finished work; use it before validation, the next phase, the next attempt, or the next user task.
+Use compact when a phase is done and you want to continue from a cleaner thread. Do not use this as a reflexive final step after delivering the finished work; use it before validation, the next phase, the next attempt, or the next user task.
 
 ```javascript
-context_rewind({
+context_compact({
   target: "parser-fix-start",
-  message: "Parser fix is implemented and the debugging phase is complete. Reason: compacting implementation history before focused validation. Next step: run targeted validation and summarize remaining edge cases.",
+  summary: "Parser fix is implemented and the debugging phase is complete. Reason: compacting implementation history before focused validation. Next step: run targeted validation and summarize remaining edge cases.",
   backupCheckpoint: "parser-fix-debug-history"
 });
 ```

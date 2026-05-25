@@ -5,14 +5,14 @@ This file records the **current chosen description** and the evaluation focus fo
 The skill has been redesigned around a conversation-management working mode:
 - frequent checkpoints
 - periodic timeline review
-- targeted rewinds as the task evolves
+- targeted compactions as the task evolves
 
 It is **not** centered on file-backed durable state, queue files, or Git-confusion guardrails.
 
 ## Current chosen description
 
 ```yaml
-description: Read this skill for long, noisy, multi-phase, or otherwise complex work that is likely to spread across many turns. Especially use it for searching, research, reading lots of files/logs/docs/web results, troubleshooting, implementation, refactoring, migration, planning-and-execution, review/comparison/audit work, repeated similar items, or switching between subtasks. It teaches a working mode built around frequent checkpoints, periodic timeline review, and targeted rewinds as the task evolves. Usually skip it for one-shot reads, bounded summaries, direct rewrites, or deterministic scripts.
+description: Read this skill for long, noisy, multi-phase, or otherwise complex work that is likely to spread across many turns. Especially use it for searching, research, reading lots of files/logs/docs/web results, troubleshooting, implementation, refactoring, migration, planning-and-execution, review/comparison/audit work, repeated similar items, or switching between subtasks. It teaches a working mode built around frequent checkpoints, periodic timeline review, and targeted compactions as the task evolves. Usually skip it for one-shot reads, bounded summaries, direct rewrites, or deterministic scripts.
 ```
 
 ## What the next eval round should test
@@ -25,11 +25,11 @@ Focus on whether the skill now teaches the intended rhythm:
 2. **Timeline review at the right moments**
    - Does the agent reach for `context_timeline` when orientation matters, instead of either ignoring structure or overusing it?
 
-3. **Targeted rewinds, not premature rewinds**
-   - Does the agent rewind only after a phase has produced a stable result, lesson, or dead-end summary?
+3. **Targeted compactions, not premature compactions**
+   - Does the agent compact only after a phase has produced a stable result, lesson, or dead-end summary?
 
 4. **Action proportionality**
-   - For light positives, does it choose checkpoint-only or timeline-first instead of jumping straight to rewind?
+   - For light positives, does it choose checkpoint-only or timeline-first instead of jumping straight to compact?
 
 5. **Scene coverage**
    - Does it trigger across search-heavy work, multi-phase work, retries/branches, repeated-item work, and interruption-prone work?

@@ -23,7 +23,7 @@ Files:
 
 Purpose:
 - test whether the skill chooses the **right intensity** of action
-- distinguish checkpoint-only vs timeline-first vs rewind-worthy cases
+- distinguish checkpoint-only vs timeline-first vs compact-worthy cases
 - measure whether the agent escalates gradually instead of overreacting
 - test repeated-item-vs-script workflow selection
 
@@ -44,7 +44,7 @@ Files:
 
 Purpose:
 - test whether the skill still triggers and routes correctly under more realistic user phrasing
-- reduce dependence on prompts that explicitly hint at checkpoints, timeline, rewind, or context-management concepts
+- reduce dependence on prompts that explicitly hint at checkpoints, timeline, compact, or context-management concepts
 - check whether search / browser reading / dev + retry / plan / repeated-items / cleanup are recognized from natural task wording
 
 ### 5. Natural actionable set
@@ -75,16 +75,16 @@ Files:
 
 Purpose:
 - test behaviors that only appear across turns
-- verify that the agent does **not** rewind immediately after finishing a noisy task when the next user message is only a follow-up or correction
-- verify that the agent **does** rewind before starting a clearly different new task after a completed noisy task
-- verify that same-task next-phase transitions can still rewind when cleanup is actually useful
+- verify that the agent does **not** compact immediately after finishing a noisy task when the next user message is only a follow-up or correction
+- verify that the agent **does** compact before starting a clearly different new task after a completed noisy task
+- verify that same-task next-phase transitions can still compact when cleanup is actually useful
 
 ## Current skill hypothesis
 
 The skill is designed to teach this working rhythm:
 - checkpoint early and often
 - review timeline when orientation matters
-- rewind only when a phase is ready to compact
+- compact only when a phase is ready to compact
 
 The skill is **not** centered on file-backed durable state.
 
@@ -93,7 +93,7 @@ The skill is **not** centered on file-backed durable state.
 ### Positive prompts
 The agent should usually do one of these:
 - proactively load/use the skill
-- explicitly adopt the checkpoint / timeline / rewind working mode
+- explicitly adopt the checkpoint / timeline / compact working mode
 - choose an appropriate first action based on prompt shape
 
 ### Negative prompts
@@ -106,10 +106,10 @@ The agent should usually:
 The agent should show proportionality:
 - **checkpoint-first** for large work just starting or interruption-prone work
 - **timeline-first** when the main problem is disorientation or stale history
-- **rewind** when a noisy phase already produced a stable takeaway
-- **no premature rewind** when the thread is only mildly cluttered
+- **compact** when a noisy phase already produced a stable takeaway
+- **no premature compact** when the thread is only mildly cluttered
 
-For this skill, the most important behavioral question is not just whether it triggers, but whether it eventually performs `context_rewind` in the right cases after establishing reasonable checkpoints.
+For this skill, the most important behavioral question is not just whether it triggers, but whether it eventually performs `context_compact` in the right cases after establishing reasonable checkpoints.
 
 ## Suggested run matrix
 
@@ -152,7 +152,7 @@ Notes:
 The default environment may still route some `no_skill` runs through other installed packages or provider behavior that knows about context tools indirectly. So the most trustworthy signal right now is:
 - `with_skill` behavior quality
 - per-case tool traces
-- checkpoint vs timeline vs rewind choice on positive cases
+- checkpoint vs timeline vs compact choice on positive cases
 
 Treat absolute `no_skill` purity as approximate unless you also run in a cleaner Pi profile.
 
@@ -164,7 +164,7 @@ Score each run on:
 2. **Action proportionality**
 3. **Workflow selection quality**
 4. **Concept-vs-operation separation**
-5. **Checkpoint / timeline / rewind choice quality**
+5. **Checkpoint / timeline / compact choice quality**
 
 ## Current chosen description
 

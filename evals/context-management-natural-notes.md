@@ -5,7 +5,7 @@ This eval set is intentionally phrased more like real user requests and less lik
 ## What this set tests
 
 1. **Natural triggering**
-   - Does the skill trigger from realistic task descriptions without explicit mentions of checkpoints, timeline, rewind, or context management terminology?
+   - Does the skill trigger from realistic task descriptions without explicit mentions of checkpoints, timeline, compact, or context management terminology?
 
 2. **Natural reference routing**
    - Does search / browser / webpage reading route into `search-research-and-reading.md`?

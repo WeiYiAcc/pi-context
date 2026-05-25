@@ -18,7 +18,7 @@
   {
     "id": 3,
     "category": "actionable-dev-retry",
-    "query": "这个 bug 我已经给你具体范围了，应该要边改边试，而且可能要连续试几个方向，失败的路子别一直带着往后走。\n\n范围：`src/index.ts` 里和 context rewind 触发有关的逻辑\n目标：减少该触发时不触发的问题",
+    "query": "这个 bug 我已经给你具体范围了，应该要边改边试，而且可能要连续试几个方向，失败的路子别一直带着往后走。\n\n范围：`src/index.ts` 里和 context compact 触发有关的逻辑\n目标：减少该触发时不触发的问题",
     "should_trigger": true,
     "expected_refs": ["development-and-troubleshooting.md", "retry-branch-and-pivot.md"],
     "must_include_tools": ["context_checkpoint"]

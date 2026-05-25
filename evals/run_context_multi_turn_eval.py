@@ -21,7 +21,7 @@ EXT_FILES = [str(ROOT / "src" / "index.ts"), str(ROOT / "src" / "context.ts")]
 SKILL_FILE_PATH = str(ROOT / "skills" / "context-management" / "SKILL.md")
 REFERENCE_DIR = ROOT / "skills" / "context-management" / "references"
 REFERENCE_PATHS = sorted(str(p) for p in REFERENCE_DIR.glob("*.md"))
-CONTEXT_TOOLS = {"context_checkpoint", "context_timeline", "context_rewind"}
+CONTEXT_TOOLS = {"context_checkpoint", "context_timeline", "context_compact"}
 
 
 @dataclass
@@ -58,7 +58,7 @@ class CaseSummary:
     turns: int
     case_pass: bool
     turn_passes: list[bool]
-    rewind_turns: list[int]
+    compact_turns: list[int]
     checkpoint_turns: list[int]
     timeline_turns: list[int]
 
@@ -214,7 +214,7 @@ def run_eval_set(cases: list[dict[str, Any]], out_root: Path, config_name: str, 
         session_dir = case_dir / "session"
         session_dir.mkdir(parents=True, exist_ok=True)
         per_turn_passes = []
-        rewind_turns = []
+        compact_turns = []
         checkpoint_turns = []
         timeline_turns = []
 
@@ -243,8 +243,8 @@ def run_eval_set(cases: list[dict[str, Any]], out_root: Path, config_name: str, 
             if first_tool_allowed is False:
                 turn_pass = False
             per_turn_passes.append(turn_pass)
-            if "context_rewind" in used_tools:
-                rewind_turns.append(turn_index)
+            if "context_compact" in used_tools:
+                compact_turns.append(turn_index)
             if "context_checkpoint" in used_tools:
                 checkpoint_turns.append(turn_index)
             if "context_timeline" in used_tools:
@@ -284,7 +284,7 @@ def run_eval_set(cases: list[dict[str, Any]], out_root: Path, config_name: str, 
             turns=len(case["turns"]),
             case_pass=all(per_turn_passes),
             turn_passes=per_turn_passes,
-            rewind_turns=rewind_turns,
+            compact_turns=compact_turns,
             checkpoint_turns=checkpoint_turns,
             timeline_turns=timeline_turns,
         )
@@ -301,7 +301,7 @@ def write_summary(turn_results: list[TurnResult], case_summaries: list[CaseSumma
             "cases_pass": 0,
             "turns": 0,
             "turns_pass": 0,
-            "rewind_cases": 0,
+            "compact_cases": 0,
             "checkpoint_cases": 0,
             "timeline_cases": 0,
         })
@@ -310,8 +310,8 @@ def write_summary(turn_results: list[TurnResult], case_summaries: list[CaseSumma
         data["turns_pass"] += sum(1 for p in cs.turn_passes if p)
         if cs.case_pass:
             data["cases_pass"] += 1
-        if cs.rewind_turns:
-            data["rewind_cases"] += 1
+        if cs.compact_turns:
+            data["compact_cases"] += 1
         if cs.checkpoint_turns:
             data["checkpoint_cases"] += 1
         if cs.timeline_turns:
@@ -326,12 +326,12 @@ def write_summary(turn_results: list[TurnResult], case_summaries: list[CaseSumma
         "",
         "## Summary",
         "",
-        "| config | cases | case pass | case pass rate | turns | turn pass | turn pass rate | checkpoint cases | timeline cases | rewind cases |",
+        "| config | cases | case pass | case pass rate | turns | turn pass | turn pass rate | checkpoint cases | timeline cases | compact cases |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for config, data in sorted(by_config.items()):
         lines.append(
-            f"| {config} | {data['cases']} | {data['cases_pass']} | {data['cases_pass'] / data['cases']:.2%} | {data['turns']} | {data['turns_pass']} | {data['turns_pass'] / data['turns']:.2%} | {data['checkpoint_cases']} | {data['timeline_cases']} | {data['rewind_cases']} |"
+            f"| {config} | {data['cases']} | {data['cases_pass']} | {data['cases_pass'] / data['cases']:.2%} | {data['turns']} | {data['turns_pass']} | {data['turns_pass'] / data['turns']:.2%} | {data['checkpoint_cases']} | {data['timeline_cases']} | {data['compact_cases']} |"
         )
     lines.extend(["", "## Cases", ""])
     for cs in case_summaries:
@@ -341,7 +341,7 @@ def write_summary(turn_results: list[TurnResult], case_summaries: list[CaseSumma
         lines.append(f"- turn_passes: {cs.turn_passes}")
         lines.append(f"- checkpoint_turns: {cs.checkpoint_turns}")
         lines.append(f"- timeline_turns: {cs.timeline_turns}")
-        lines.append(f"- rewind_turns: {cs.rewind_turns}")
+        lines.append(f"- compact_turns: {cs.compact_turns}")
         lines.append("")
     lines.extend(["## Turn failures", ""])
     for tr in turn_results:

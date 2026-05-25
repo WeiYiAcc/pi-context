@@ -15,7 +15,7 @@ This set uses realistic user wording and scores recognition by mode-signal evide
 A prompt in this set can be a successful positive even if the agent does not immediately call `context_checkpoint` or read a reference file, as long as it clearly signals the right working mode and asks for the next concrete inputs in a way consistent with that mode.
 
 The automated runner treats positive cases as passed when there is evidence of both:
-- context-management recognition, either via context tool usage, skill/reference reads, or explicit text about context/checkpoint/timeline/rewind-style management
+- context-management recognition, either via context tool usage, skill/reference reads, or explicit text about context/checkpoint/timeline/compact-style management
 - the expected scenario mode, either via the expected reference read or final text matching that mode's aliases
 
 Negative cases should remain non-operational: no context tools, no skill read, and no reference reads.

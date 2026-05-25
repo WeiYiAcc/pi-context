@@ -20,9 +20,9 @@ interface SessionTreeNode {
     label?: string;
 }
 
-const InternalTools = ["context_checkpoint", "context_timeline", "context_rewind"];
+const InternalTools = ["context_checkpoint", "context_timeline", "context_compact"];
 let CommandCtx: ExtensionCommandContext | null = null;
-let RewindParams: any = null;
+let CompactParams: any = null;
 
 const isInternal = (name: string) => InternalTools.includes(name);
 
@@ -52,10 +52,10 @@ const ContextTimelineParams = Type.Object({
     verbose: Type.Optional(Type.Boolean({ description: "If true, show all messages. If false (default), collapse intermediate AI steps and only show milestones, user messages, checkpoints, branch points, and summaries." })),
 });
 
-const ContextRewindParams = Type.Object({
-    target: Type.String({ description: "Where to rewind or compact to. Can be a checkpoint name, a history node ID, or root. This becomes the starting point for a fresh continuation of the conversation." }),
-    message: Type.String({ description: "The carryover summary for the fresh continuation. Summarize current progress, lessons, important file changes, and the next step so the agent can continue from a clean context. A good summary message includes status, reason, important changes, and next step." }),
-    backupCheckpoint: Type.Optional(Type.String({ description: "Optional checkpoint name to apply to the current conversation state before rewinding. Use this to preserve a named backup of the noisy path you are about to compact away." })),
+const ContextCompactParams = Type.Object({
+    target: Type.String({ description: "Where to continue from after compacting. Can be a checkpoint name, a history node ID, or root. This becomes the starting point for a fresh continuation of the conversation." }),
+    summary: Type.String({ description: "The handoff summary for the fresh continuation. Include the stable result, reason for compacting, important changes/decisions, next step, and any source anchors/evidence/open questions likely needed soon. Do not rely on backupCheckpoint for details that the next phase will probably need." }),
+    backupCheckpoint: Type.Optional(Type.String({ description: "Optional checkpoint name to apply to the current conversation state before compacting. Use this to preserve a named backup of the noisy path you are about to compact away; mention in the summary when future-you should return to it." })),
 });
 
 const ContextCheckpointParams = Type.Object({
@@ -102,7 +102,7 @@ export default function (pi: ExtensionAPI) {
     pi.registerTool({
         name: "context_checkpoint",
         label: "Context Checkpoint",
-        description: "Create a named checkpoint in the conversation history. Use this before risky work, before a long research pass, or whenever you reach a stable milestone.",
+        description: "Create a named checkpoint in the conversation history. Use this before risky work, before a long research pass, or whenever you reach a stable milestone. A checkpoint is an anchor: after the noisy phase produces a stable result and work remains, prefer context_compact back to this anchor with a handoff summary before continuing.",
         parameters: ContextCheckpointParams,
         async execute(_id, params: Static<typeof ContextCheckpointParams>, _signal, _onUpdate, ctx) {
             const sm = ctx.sessionManager as SessionManager;
@@ -157,7 +157,13 @@ export default function (pi: ExtensionAPI) {
             }
 
             pi.setLabel(id, params.name);
-            return { content: [{ type: "text", text: `Created checkpoint '${params.name}' at ${id}` }], details: {} };
+            return {
+                content: [{
+                    type: "text",
+                    text: `Created checkpoint '${params.name}' at ${id}. If this phase becomes noisy and then yields a stable result while work remains, use context_compact back to this anchor with a concise handoff summary before continuing.`
+                }],
+                details: {}
+            };
         },
     });
 
@@ -361,10 +367,15 @@ export default function (pi: ExtensionAPI) {
                 stepsSinceCheckpoint++;
             }
 
+            const compactCue = nearestCheckpointName === "None"
+                ? "create a checkpoint before the next noisy phase"
+                : `if this segment has produced a stable result and another phase remains, compact to '${nearestCheckpointName}' with a handoff summary before continuing`;
+
             const hud = [
                 `[Context Dashboard]`,
                 `• Context Usage:    ${usageStr}`,
                 `• Segment Size:     ${stepsSinceCheckpoint} steps since last checkpoint '${nearestCheckpointName}'`,
+                `• Compact Cue:      ${compactCue}`,
                 `---------------------------------------------------`
             ].join("\n");
 
@@ -373,11 +384,11 @@ export default function (pi: ExtensionAPI) {
     });
 
     pi.registerTool({
-        name: "context_rewind",
-        label: "Conversation Rewind",
-        description: "Return to an earlier conversation checkpoint and start a fresh continuation with a carryover summary. This changes session history only and does not modify disk files. Always provide a detailed message.",
-        parameters: ContextRewindParams,
-        async execute(_id, params: Static<typeof ContextRewindParams>, _signal, _onUpdate, ctx) {
+        name: "context_compact",
+        label: "Context Compact",
+        description: "Compact the current noisy conversation path into a handoff summary and continue from an earlier checkpoint or history node. Use proactively at phase boundaries: after a noisy investigation finds stable facts and before the next phase (export, implementation, validation, next item, or new task). This changes conversation history only and does not modify disk files. Always provide a detailed handoff summary with result, evidence/source anchors, decisions, important changes, open questions, and next step when relevant.",
+        parameters: ContextCompactParams,
+        async execute(_id, params: Static<typeof ContextCompactParams>, _signal, _onUpdate, ctx) {
             if (!CommandCtx) {
                 ctx.ui.setEditorText(`/acm ${ctx.ui.getEditorText() || "continue"}`)
                 return {
@@ -402,43 +413,43 @@ export default function (pi: ExtensionAPI) {
             const currentLabel = currentLeaf ? sm.getLabel(currentLeaf) : undefined;
             const origin = currentLabel ? `checkpoint: ${currentLabel}` : (currentLeaf || "unknown");
 
-            const enrichedMessage = `(summary from ${origin})\n${params.message}`;
+            const enrichedMessage = `(handoff summary from ${origin})\n${params.summary}`;
 
             const nid = await sm.branchWithSummary(tid, enrichedMessage);
-            RewindParams = params;
-            RewindParams.nid = nid;
-            RewindParams.tid = tid;
-            RewindParams.enrichedMessage = enrichedMessage;
+            CompactParams = params;
+            CompactParams.nid = nid;
+            CompactParams.tid = tid;
+            CompactParams.enrichedMessage = enrichedMessage;
 
-            return { content: [{ type: "text", text: "rewind start" }], details: {} };
+            return { content: [{ type: "text", text: "compact start" }], details: {} };
         },
     });
 
     pi.on("turn_end", async (_event, ctx) => {
-        if (!RewindParams) {
+        if (!CompactParams) {
             return
         }
         ctx.abort()
     });
 
     pi.on("agent_end", async (_event, ctx) => {
-        if (!RewindParams) {
+        if (!CompactParams) {
             return
         }
         if (!CommandCtx) {
             return
         }
 
-        await CommandCtx.navigateTree(RewindParams.nid, {
+        await CommandCtx.navigateTree(CompactParams.nid, {
             summarize: false,
         });
 
-        ctx.ui.notify(`Rewound to ${RewindParams.target}${RewindParams.target === RewindParams.tid ? "" : `(${RewindParams.tid})`}\nBackup checkpoint created: ${RewindParams.backupCheckpoint || "none"}\nmessage: ${RewindParams.enrichedMessage}`, "info");
-        RewindParams = null;
+        ctx.ui.notify(`Compacted to ${CompactParams.target}${CompactParams.target === CompactParams.tid ? "" : `(${CompactParams.tid})`}\nBackup checkpoint created: ${CompactParams.backupCheckpoint || "none"}\nsummary: ${CompactParams.enrichedMessage}`, "info");
+        CompactParams = null;
 
         pi.sendMessage({
             customType: "pi-context",
-            content: "context_rewind complete. A summary of your previous conversation path was injected above. Read it to understand your new state. Execute the 'Next Step' from the summary",
+            content: "context_compact complete. A handoff summary of your previous conversation path was injected above. Read it to understand your new state. Execute the Next Step from the summary",
             display: false,
         }, {
             triggerTurn: true,
