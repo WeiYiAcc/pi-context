@@ -432,7 +432,7 @@ export default function (pi: ExtensionAPI) {
         ctx.abort()
     });
 
-    pi.on("agent_end", async (_event, ctx) => {
+    pi.on("agent_end", async () => {
         if (!CompactParams) {
             return
         }
@@ -440,19 +440,35 @@ export default function (pi: ExtensionAPI) {
             return
         }
 
-        await CommandCtx.navigateTree(CompactParams.nid, {
-            summarize: false,
-        });
-
-        ctx.ui.notify(`Compacted to ${CompactParams.target}${CompactParams.target === CompactParams.tid ? "" : `(${CompactParams.tid})`}\nBackup checkpoint created: ${CompactParams.backupCheckpoint || "none"}\nsummary: ${CompactParams.enrichedMessage}`, "info");
+        const compactParams = CompactParams;
+        const commandCtx = CommandCtx;
         CompactParams = null;
 
-        pi.sendMessage({
-            customType: "pi-context",
-            content: "context_compact complete. A handoff summary of your previous conversation path was injected above. Read it to understand your new state. Execute the Next Step from the summary",
-            display: false,
-        }, {
-            triggerTurn: true,
-        });
+        // `agent_end` is emitted before the core Agent is actually idle. If we
+        // call pi.sendMessage({ triggerTurn: true }) inside this handler, pi still
+        // sees an active stream and queues the message as steering; after
+        // `agent_end` the loop has already stopped, so that queued message is not
+        // drained. Defer navigation + continuation until the current run settles.
+        setTimeout(async () => {
+            try {
+                await commandCtx.waitForIdle();
+                await commandCtx.navigateTree(compactParams.nid, {
+                    summarize: false,
+                });
+
+                commandCtx.ui.notify(`Compacted to ${compactParams.target}${compactParams.target === compactParams.tid ? "" : `(${compactParams.tid})`}\nBackup checkpoint created: ${compactParams.backupCheckpoint || "none"}\nsummary: ${compactParams.enrichedMessage}`, "info");
+
+                pi.sendMessage({
+                    customType: "pi-context",
+                    content: "context_compact complete. A handoff summary of your previous conversation path was injected above. Read it to understand your new state. Execute the Next Step from the summary",
+                    display: false,
+                }, {
+                    triggerTurn: true,
+                    deliverAs: "followUp",
+                });
+            } catch (err) {
+                commandCtx.ui.notify(`context_compact failed to continue: ${err instanceof Error ? err.message : String(err)}`, "error");
+            }
+        }, 0);
     });
 }
