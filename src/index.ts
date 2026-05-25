@@ -77,7 +77,7 @@ export default function (pi: ExtensionAPI) {
                 deliverAs: "followUp"
             });
             if (args) {
-                pi.sendUserMessage(args)
+                pi.sendUserMessage(args, { deliverAs: "followUp" });
             }
         }
     });
