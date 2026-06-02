@@ -160,7 +160,7 @@ export default function (pi: ExtensionAPI) {
             return {
                 content: [{
                     type: "text",
-                    text: `Created checkpoint '${params.name}' at ${id}. If this phase becomes noisy and then yields a stable result while work remains, use context_compact back to this anchor with a concise handoff summary before continuing.`
+                    text: `Created checkpoint '${params.name}' at ${id}.`
                 }],
                 details: {}
             };
