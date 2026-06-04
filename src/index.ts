@@ -3,6 +3,7 @@ import {
     type SessionManager,
     type SessionEntry,
     type ExtensionCommandContext,
+    type ContextUsage,
 } from "@earendil-works/pi-coding-agent";
 import {
     Type,
@@ -25,6 +26,15 @@ let CommandCtx: ExtensionCommandContext | null = null;
 let CompactParams: any = null;
 
 const isInternal = (name: string) => InternalTools.includes(name);
+
+const formatContextUsage = (usage: ContextUsage | undefined, includeTokens = false): string => {
+    if (usage?.percent == null) return "Unknown";
+
+    const percent = `${usage.percent.toFixed(1)}%`;
+    if (!includeTokens || usage.tokens == null) return percent;
+
+    return `${percent} (${formatTokens(usage.tokens)}/${formatTokens(usage.contextWindow)})`;
+};
 
 const resolveTargetId = (sm: SessionManager, target: string): string => {
     if (target.toLowerCase() === "root") {
@@ -69,13 +79,6 @@ export default function (pi: ExtensionAPI) {
         handler: async (args, ctx) => {
             CommandCtx = ctx;
             ctx.ui.notify("Agentic Context Management enabled.", "info");
-            pi.sendMessage({
-                customType: "pi-context",
-                content: "use context-management skill",
-                display: false,
-            }, {
-                deliverAs: "followUp"
-            });
             if (args) {
                 pi.sendUserMessage(args, { deliverAs: "followUp" });
             }
@@ -348,11 +351,7 @@ export default function (pi: ExtensionAPI) {
             }
 
             // --- Context Dashboard (HUD) ---
-            const usage = await ctx.getContextUsage();
-            let usageStr = "Unknown";
-            if (usage?.percent != null && usage.tokens != null && usage.contextWindow != null) {
-                usageStr = `${usage.percent.toFixed(1)}% (${formatTokens(usage.tokens)}/${formatTokens(usage.contextWindow)})`;
-            }
+            const usageStr = formatContextUsage(ctx.getContextUsage(), true);
 
             // Find the distance to the nearest checkpoint
             let stepsSinceCheckpoint = 0;
@@ -400,6 +399,7 @@ export default function (pi: ExtensionAPI) {
                 };
             }
             const sm = ctx.sessionManager as SessionManager;
+            const usageBeforeText = formatContextUsage(ctx.getContextUsage());
 
             const tid = resolveTargetId(sm, params.target);
 
@@ -420,6 +420,7 @@ export default function (pi: ExtensionAPI) {
             CompactParams.nid = nid;
             CompactParams.tid = tid;
             CompactParams.enrichedMessage = enrichedMessage;
+            CompactParams.usageBeforeText = usageBeforeText;
 
             return { content: [{ type: "text", text: "compact start" }], details: {} };
         },
@@ -456,7 +457,13 @@ export default function (pi: ExtensionAPI) {
                     summarize: false,
                 });
 
-                commandCtx.ui.notify(`Compacted to ${compactParams.target}${compactParams.target === compactParams.tid ? "" : `(${compactParams.tid})`}\nBackup checkpoint created: ${compactParams.backupCheckpoint || "none"}\nsummary: ${compactParams.enrichedMessage}`, "info");
+                const usageAfter = commandCtx.getContextUsage();
+                commandCtx.ui.notify([
+                    `Compacted to ${compactParams.target}${compactParams.target === compactParams.tid ? "" : `(${compactParams.tid})`}`,
+                    `Context Usage: ${compactParams.usageBeforeText} -> ${formatContextUsage(usageAfter)}`,
+                    `Backup checkpoint created: ${compactParams.backupCheckpoint || "none"}`,
+                    `Summary: ${compactParams.enrichedMessage}`,
+                ].join("\n"), "info");
 
                 pi.sendMessage({
                     customType: "pi-context",
