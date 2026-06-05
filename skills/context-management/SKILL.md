@@ -55,6 +55,16 @@ This prevents both premature cleanup after final answers and endless checkpoint-
 6. If the whole requested task is complete and your only remaining action is the final response, answer and wait. Let the next user message determine whether cleanup is useful.
 7. After a successful compact, continue from the injected summary instead of dragging the full raw path forward.
 
+### Phase-boundary reflex
+
+After any checkpointed noisy phase, pause before the next tool call or next phase:
+
+- Did this phase produce a stable result, lesson, or failure reason?
+- Is the next action a new phase rather than the final answer?
+- Would that next phase work from a compact summary instead of the full raw trail?
+
+If yes, compact now instead of creating another checkpoint and dragging the raw path forward.
+
 ## Tool policy
 
 ### `context_checkpoint`
@@ -133,9 +143,9 @@ Prefer:
 - the repeated-work anchor for batch workflows
 - the last stable pre-branch checkpoint when abandoning an approach
 
-Avoid compacting too far back, compacting to an anchor that already includes the noise, or defaulting to `root` unless the whole active path should reset.
+Avoid compacting too far back, compacting to an anchor that already includes the noise, or defaulting to `root` unless the whole active path should reset. If you are unsure which anchor is best, run `context_timeline` first.
 
-Use `backupCheckpoint` when the raw path may still matter later: long investigations, abandoned branches, risky compactions, or details that may be needed for recovery.
+Use `backupCheckpoint` when the raw path may still matter later: long investigations, abandoned branches, risky compactions, or details that may be needed for recovery. A backup checkpoint is a recovery safety net, not a substitute for the summary; include details likely needed in the next phase because returning to backup is costly.
 
 ## Compact summary requirements
 
@@ -163,6 +173,13 @@ Useful shapes:
 - `[result] + [evidence/source anchors] + [next step]`
 - `[failure reason] + [lesson] + [next attempt]`
 - `[changes] + [validation next step] + [backup pointer]`
+
+Good examples:
+
+- `Found DB pool exhaustion as likely root cause. Evidence: logs show pool wait timeouts during peak traffic; config has pool size 10; no network errors found. Reason: investigation is complete and ready for mitigation planning. Next step: propose fixes and validation.`
+- `Parser fix is implemented. Important changes: src/parser.ts and test/parser.test.ts. Reason: compacting noisy implementation history before focused validation. Next step: run targeted tests and summarize remaining edge cases.`
+
+Before compacting, quickly check: stable result? real continuation? right anchor? changed files captured? explicit next step?
 
 Avoid vague summaries like `Done`, `Investigated`, `Switching context`, or `Going back`.
 
