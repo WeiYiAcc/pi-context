@@ -62,8 +62,9 @@
   },
   {
     "id": 10,
-    "category": "recognition-negative-concept",
+    "category": "recognition-concept-method",
     "query": "你觉得在长对话里怎么保持思路清晰比较好？先讲讲方法，不用真的操作。",
-    "should_trigger": false
+    "should_trigger": true,
+    "must_not_include_tools": ["context_compact"]
   }
 ]
